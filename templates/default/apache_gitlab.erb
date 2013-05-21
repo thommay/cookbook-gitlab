@@ -1,0 +1,48 @@
+<% if @redirect_https -%>
+<VirtualHost *:80>
+  ServerName        <%= @host_name %>
+<% @host_aliases.each do |a| -%>
+  ServerAlias       <%= a %>
+<% end -%>
+  RedirectMatch ^/(.*) https://<%= @host_name %>/$1
+</VirtualHost>
+<% end -%>
+
+<% if @https -%>
+<VirtualHost *:443>
+  SSLEngine on
+  <% if @ca_file %>
+  SSLCACertificateFile <%= @ca_file %>
+  <% end -%>
+  <% if @ca_chain_file %>
+  SSLCertificateChainFile <%= @ca_chain_file %>
+  <% end -%>
+  SSLCertificateFile <%= @ssl_certificate %>
+  <% if @ssl_certificate_key %>
+  SSLCertificateKeyFile <%= @ssl_certificate_key %>
+  <% end -%>
+  SSLProtocol all -SSLv2
+  SSLCipherSuite HIGH:MEDIUM
+<% else %>
+<VirtualHost *:80>
+<% end %>
+
+  ServerName        <%= @host_name %>
+  ProxyRequests     Off
+<% @host_aliases.each do |a| -%>
+  ServerAlias       <%= a %>
+<% end -%>
+
+  # Local reverse proxy authorization override
+  # Most unix distribution deny proxy by default
+  # (ie /etc/apache2/mods-enabled/proxy.conf in Ubuntu)
+  <Proxy http://localhost:<%= node['gitlab']['unicorn_tcp_port'] %>/*>
+    Order deny,allow
+    Allow from all
+  </Proxy>
+
+  ProxyPreserveHost on
+  ProxyPass         /  http://localhost:<%= node['gitlab']['unicorn_tcp_port'] %>/
+  ProxyPassReverse  /  http://localhost:<%= node['gitlab']['unicorn_tcp_port'] %>/
+
+</VirtualHost>

@@ -43,7 +43,7 @@ when "ubuntu","debian"
     ruby1.9.1 ruby1.9.1-dev ri1.9.1 libruby1.9.1
     curl wget checkinstall libxslt-dev libsqlite3-dev
     libcurl4-openssl-dev libssl-dev libmysql++-dev
-    libicu-dev libc6-dev libyaml-dev nginx python python-dev
+    libicu-dev libc6-dev libyaml-dev python python-dev
   }
 when "redhat","centos","amazon","scientific"
   case node['platform_version'].to_i
@@ -51,13 +51,13 @@ when "redhat","centos","amazon","scientific"
     default['gitlab']['packages'] = %w{
       curl wget libxslt-devel sqlite-devel openssl-devel
       mysql++-devel libicu-devel glibc-devel libyaml-devel
-      nginx python26 python26-devel
+      python26 python26-devel
     }
   when 6
     default['gitlab']['packages'] = %w{
       curl wget libxslt-devel sqlite-devel openssl-devel
       mysql++-devel libicu-devel glibc-devel
-      libyaml-devel nginx python python-devel
+      libyaml-devel python python-devel
     }
   end
 else
@@ -65,7 +65,7 @@ else
     ruby1.9.1 ruby1.9.1-dev ri1.9.1 libruby1.9.1
     curl wget checkinstall libxslt-dev libsqlite3-dev
     libcurl4-openssl-dev libssl-dev libmysql++-dev
-    libicu-dev libc6-dev libyaml-dev nginx python
+    libicu-dev libc6-dev libyaml-dev python
     python-dev
   }
 end
@@ -80,10 +80,15 @@ else
   default['gitlab']['install_ruby'] = "package"
 end
 
+default['gitlab']['unicorn_tcp'] = false
+default['gitlab']['unicorn_tcp_port'] = 8080
+
 default['gitlab']['https'] = false
+default['gitlab']['generate_ssl_certs'] = false
 default['gitlab']['ssl_certificate'] = "/etc/nginx/#{node['fqdn']}.crt"
 default['gitlab']['ssl_certificate_key'] = "/etc/nginx/#{node['fqdn']}.key"
 default['gitlab']['ssl_req'] = "/C=US/ST=Several/L=Locality/O=Example/OU=Operations/CN=#{node['fqdn']}/emailAddress=root@localhost"
+default['gitlab']['http_proxy']['variant'] = 'nginx'
 
 default['gitlab']['backup_path'] = node['gitlab']['app_home'] + "/backups"
 default['gitlab']['backup_keep_time'] = 604800
