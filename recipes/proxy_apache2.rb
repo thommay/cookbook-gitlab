@@ -13,7 +13,6 @@ template "#{node['apache']['dir']}/sites-available/gitlab" do
   variables(
     :host_name     => node['gitlab']['http_proxy']['host_name'],
     :host_aliases     => node['gitlab']['http_proxy']['host_aliases'],
-    :listen_ports     => node['gitlab']['http_proxy']['listen_ports'],
     :ca_file          => node['gitlab']['ssl_ca_file'],
     :ca_chain_file    => node['gitlab']['ssl_ca_chain_file'],
     :ssl_certificate  => node['gitlab']['ssl_certificate'],
