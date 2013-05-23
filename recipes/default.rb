@@ -19,7 +19,7 @@
 #
 
 # Include cookbook dependencies
-%w{ ruby_build gitlab::gitolite build-essential
+%w{ ruby_build build-essential
     readline sudo openssh xml zlib python::package python::pip
     redisio::install redisio::enable }.each do |requirement|
   include_recipe requirement
@@ -71,6 +71,9 @@ end
     action :install
   end
 end
+
+# Install gitlab shell
+include_recipe "gitlab::shell"
 
 # Install pygments from pip
 python_pip "pygments" do
@@ -165,16 +168,6 @@ template "#{node['gitlab']['home']}/.ssh/config" do
   )
 end
 
-# Sorry for this ugliness.
-# It seems maybe something is wrong with the 'gitolite setup' script.
-# This was implemented as a workaround.
-execute "install-gitlab-key" do
-  command "su - #{node['gitlab']['git_user']} -c 'perl #{node['gitlab']['gitolite_home']}/src/gitolite setup -pk #{node['gitlab']['git_home']}/gitlab.pub'"
-  user "root"
-  cwd node['gitlab']['git_home']
-  not_if "grep -q '#{node['gitlab']['user']}' #{node['gitlab']['git_home']}/.ssh/authorized_keys"
-end
-
 # Clone Gitlab repo from github
 git node['gitlab']['app_home'] do
   repository node['gitlab']['gitlab_url']
@@ -184,15 +177,19 @@ git node['gitlab']['app_home'] do
   group node['gitlab']['group']
 end
 
-directory "#{node['gitlab']['app_home']}/tmp" do
-  user node['gitlab']['user']
-  group node['gitlab']['group']
-  mode "0755"
-  action :create
+%w{ tmp tmp/pids tmp/cache log }.each do |d|
+  directory "#{node['gitlab']['app_home']}/#{d}" do
+    user node['gitlab']['user']
+    group node['gitlab']['group']
+    mode "0755"
+    action :create
+    recursive true
+  end
 end
 
-# Render gitlab config file
-template "#{node['gitlab']['app_home']}/config/gitlab.yml" do
+# Render gitlab config files
+%w{ gitlab.yml puma.rb }.each do |cfg|
+template "#{node['gitlab']['app_home']}/config/#{cfg}" do
   owner node['gitlab']['user']
   group node['gitlab']['group']
   mode 0644
@@ -205,16 +202,17 @@ template "#{node['gitlab']['app_home']}/config/gitlab.yml" do
     :backup_keep_time => node['gitlab']['backup_keep_time']
   )
 end
-
-# Setup the database
-case node['gitlab']['database']['type']
-when 'mysql'
-  include_recipe 'gitlab::mysql'
-when 'postgres'
-  include_recipe 'gitlab::postgres'
-else
-  Chef::Log.error "#{node['gitlab']['database']['type']} is not a valid type. Please use 'mysql' or 'postgres'!"
 end
+
+# # Setup the database
+# case node['gitlab']['database']['type']
+# when 'mysql'
+#   include_recipe 'gitlab::mysql'
+# when 'postgres'
+#   include_recipe 'gitlab::postgres'
+# else
+#   Chef::Log.error "#{node['gitlab']['database']['type']} is not a valid type. Please use 'mysql' or 'postgres'!"
+# end
 
 # Create the backup directory
 directory node['gitlab']['backup_path'] do
@@ -241,7 +239,7 @@ template "#{node['gitlab']['app_home']}/config/database.yml" do
   )
 end
 
-without_group = node['gitlab']['database'] == 'mysql' ? 'postgres' : 'mysql'
+without_group = node['gitlab']['database']['type'] == 'mysql' ? 'postgres' : 'mysql'
 
 # Install Gems with bundle install
 execute "gitlab-bundle-install" do
@@ -255,70 +253,9 @@ end
 
 # Setup sqlite database for Gitlab
 execute "gitlab-bundle-rake" do
-  command "bundle exec rake gitlab:app:setup RAILS_ENV=production && touch .gitlab-setup"
+  command "echo 'yes'|bundle exec rake gitlab:setup RAILS_ENV=production && touch .gitlab-setup"
   cwd node['gitlab']['app_home']
   user node['gitlab']['user']
   group node['gitlab']['group']
   not_if { File.exists?("#{node['gitlab']['app_home']}/.gitlab-setup") }
-end
-
-# Render unicorn template
-template "#{node['gitlab']['app_home']}/config/unicorn.rb" do
-  owner node['gitlab']['user']
-  group node['gitlab']['group']
-  mode 0644
-  variables(
-    :fqdn => node['fqdn'],
-    :gitlab_app_home => node['gitlab']['app_home']
-  )
-end
-
-# Render unicorn_rails init script
-template "/etc/init.d/unicorn_rails" do
-  owner "root"
-  group "root"
-  mode 0755
-  source "unicorn_rails.init.erb"
-  variables(
-    :fqdn => node['fqdn'],
-    :gitlab_app_home => node['gitlab']['app_home']
-  )
-end
-
-# Start unicorn_rails and nginx service
-%w{ unicorn_rails nginx }.each do |svc|
-  service svc do
-    action [ :start, :enable ]
-  end
-end
-
-bash "Create SSL key" do
-  not_if { ! node['gitlab']['https'] || File.exists?(node['gitlab']['ssl_certificate_key']) }
-  cwd "/etc/nginx"
-  code <<-EOF
-umask 077
-openssl genrsa 2048 > #{node['gitlab']['ssl_certificate_key']}
-EOF
-end
-
-bash "Create SSL certificate" do
-  not_if { ! node['gitlab']['https'] || File.exists?(node['gitlab']['ssl_certificate']) }
-  cwd "/etc/nginx"
-  code "openssl req -subj \"#{node['gitlab']['ssl_req']}\" -new -x509 -nodes -sha1 -days 3650 -key #{node['gitlab']['ssl_certificate_key']} > #{node['gitlab']['ssl_certificate']}"
-end
-
-# Render nginx default vhost config
-template "/etc/nginx/conf.d/default.conf" do
-  owner "root"
-  group "root"
-  mode 0644
-  source "nginx.default.conf.erb"
-  notifies :restart, "service[nginx]"
-  variables(
-    :hostname => node['hostname'],
-    :gitlab_app_home => node['gitlab']['app_home'],
-    :https_boolean => node['gitlab']['https'],
-    :ssl_certificate => node['gitlab']['ssl_certificate'],
-    :ssl_certificate_key => node['gitlab']['ssl_certificate_key']
-  )
 end

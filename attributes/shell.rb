@@ -18,8 +18,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-default['gitlab']['gitolite_url'] = "https://github.com/gitlabhq/gitolite.git"
-default['gitlab']['gitolite_branch'] = "gl-v304"
+default['gitlab']['shell_url'] = "https://github.com/gitlabhq/gitlab-shell.git"
+default['gitlab']['shell_branch'] = "v1.4.0"
 default['gitlab']['git_user'] = "git"
 default['gitlab']['git_group'] = "git"
 
@@ -27,7 +27,7 @@ default['gitlab']['git_group'] = "git"
 default['gitlab']['git_home'] = "/var/git"
 
 # Set gitolite home directory
-default['gitlab']['gitolite_home'] = "#{node['gitlab']['git_home']}/gitolite"
+default['gitlab']['shell_home'] = "#{node['gitlab']['git_home']}/gitlab-shell"
 
 # Set gitolite umask
-default['gitlab']['gitolite_umask'] = "0007"
+default['gitlab']['shell_umask'] = "0007"

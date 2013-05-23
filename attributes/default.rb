@@ -25,7 +25,7 @@ default['gitlab']['app_home'] = "#{node['gitlab']['home']}/gitlab"
 
 # Set github URL for gitlab
 default['gitlab']['gitlab_url'] = "git://github.com/gitlabhq/gitlabhq.git"
-default['gitlab']['gitlab_branch'] = "stable"
+default['gitlab']['gitlab_branch'] = "5-2-stable"
 
 # Database setup
 default['gitlab']['database']['type'] = "mysql"

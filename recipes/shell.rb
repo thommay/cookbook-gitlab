@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: gitolite
+# Cookbook Name:: gitlab-shell
 # Recipe:: default
 #
 # Copyright 2010, RailsAnt, Inc.
@@ -51,30 +51,24 @@ directory "#{node['gitlab']['git_home']}/.ssh" do
   mode 0700
 end
 
-# Clone gitolite repo from github
-git node['gitlab']['gitolite_home'] do
-  repository node['gitlab']['gitolite_url']
-  reference node['gitlab']['gitolite_branch']
+# Clone gitlab-shell repo from github
+git node['gitlab']['shell_home'] do
+  repository node['gitlab']['shell_url']
+  reference node['gitlab']['shell_branch']
   user node['gitlab']['git_user']
   group node['gitlab']['git_group']
   action :checkout
 end
 
-# Gitolite application install script
-execute "gitolite-install" do
-  user node['gitlab']['git_user']
-  cwd node['gitlab']['git_home']
-  command "#{node['gitlab']['gitolite_home']}/install -ln #{node['gitlab']['git_home']}/bin"
-  creates "#{node['gitlab']['git_home']}/bin/gitolite"
-end
-
-# Gitolite.rc template
-template "#{node['gitlab']['git_home']}/.gitolite.rc" do
-  source "gitolite.rc.erb"
+template "#{node['gitlab']['shell_home']}/config.yml" do
+  source "config-shell.yml.erb"
   owner node['gitlab']['git_user']
   group node['gitlab']['git_group']
-  mode 0644
-  variables(
-    :gitolite_umask => node['gitlab']['gitolite_umask']
-  ) 
+end
+
+# gitlab-shell application install script
+execute "shell-install" do
+  user node['gitlab']['git_user']
+  cwd node['gitlab']['git_home']
+  command "#{node['gitlab']['shell_home']}/bin/install"
 end
