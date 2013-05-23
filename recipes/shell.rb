@@ -33,26 +33,26 @@ end
 directory node['gitlab']['git_home'] do
   owner node['gitlab']['git_user']
   group node['gitlab']['git_group']
-  mode 0750
+  mode "0750"
 end
 
 directory "#{node['gitlab']['git_home']}/bin" do
   owner node['gitlab']['git_user']
   group node['gitlab']['git_group']
-  mode 0775
+  mode "0775"
 end
 
 directory "#{node['gitlab']['git_home']}/repositories" do
   owner node['gitlab']['git_user']
   group node['gitlab']['git_group']
-  mode 2770
+  mode "2770"
 end
 
 # Create a $HOME/.ssh folder
 directory "#{node['gitlab']['git_home']}/.ssh" do
   owner node['gitlab']['git_user']
   group node['gitlab']['git_group']
-  mode 0700
+  mode "0700"
 end
 
 # Clone gitlab-shell repo from github
