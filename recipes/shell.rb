@@ -36,12 +36,16 @@ directory node['gitlab']['git_home'] do
   mode 0750
 end
 
-%w{ bin repositories }.each do |subdir|
-  directory "#{node['gitlab']['git_home']}/#{subdir}" do
-    owner node['gitlab']['git_user']
-    group node['gitlab']['git_group']
-    mode 0775
-  end
+directory "#{node['gitlab']['git_home']}/bin" do
+  owner node['gitlab']['git_user']
+  group node['gitlab']['git_group']
+  mode 0775
+end
+
+directory "#{node['gitlab']['git_home']}/repositories" do
+  owner node['gitlab']['git_user']
+  group node['gitlab']['git_group']
+  mode 2770
 end
 
 # Create a $HOME/.ssh folder

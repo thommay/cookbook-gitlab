@@ -3,7 +3,7 @@ include_recipe "apache2"
 apache_module "proxy"
 apache_module "proxy_http"
 
-apache_module "ssl" if node['gitlab']['https']
+include_recipe "apache2::mod_ssl" if node['gitlab']['https']
 
 template "#{node['apache']['dir']}/sites-available/gitlab" do
   source      "apache_gitlab.erb"

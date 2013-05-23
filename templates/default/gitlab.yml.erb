@@ -84,14 +84,14 @@ production: &base
 
   ## LDAP settings
   ldap:
-    enabled: true
-    host: '_your_ldap_server'
-    base: '_the_base_where_you_search_for_users'
-    port: 636
+    enabled: <%= node['gitlab']['ldap']['enabled'] %>
+    host: '<%= node['gitlab']['ldap']['server'] %>'
+    base: '<%= node['gitlab']['ldap']['basedn'] %>'
+    port: <%= node['gitlab']['ldap']['port'] %>
     uid: 'sAMAccountName'
-    method: 'ssl' # "ssl" or "plain"
-    bind_dn: '_the_full_dn_of_the_user_you_will_bind_with'
-    password: '_the_password_of_the_bind_user'
+    method: '<%= node['gitlab']['ldap']['method'] %>'
+    bind_dn: '<%= node['gitlab']['ldap']['bind_dn'] %>'
+    password: '<%= node['gitlab']['ldap']['password'] %>'
 
   ## OmniAuth settings
   omniauth:

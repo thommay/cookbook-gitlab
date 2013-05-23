@@ -35,25 +35,25 @@ link "/usr/bin/redis-cli" do
   to "/usr/local/bin/redis-cli"
 end
 
-# # There are problems deploying on Redhat provided rubies.
-# # We'll use Fletcher Nichol's slick ruby_build cookbook to compile a Ruby.
-# if node['gitlab']['install_ruby'] !~ /package/
-#   ruby_build_ruby node['gitlab']['install_ruby']
+# There are problems deploying on Redhat provided rubies.
+# We'll use Fletcher Nichol's slick ruby_build cookbook to compile a Ruby.
+if node['gitlab']['install_ruby'] !~ /package/
+  ruby_build_ruby node['gitlab']['install_ruby']
 
-#   # Drop off a profile script.
-#   template "/etc/profile.d/gitlab.sh" do
-#     owner "root"
-#     group "root"
-#     mode 0755
-#     variables(
-#       :fqdn => node['fqdn'],
-#       :install_ruby => node['gitlab']['install_ruby']
-#     )
-#   end
+  # Drop off a profile script.
+  template "/etc/profile.d/gitlab.sh" do
+    owner "root"
+    group "root"
+    mode 0755
+    variables(
+      :fqdn => node['fqdn'],
+      :install_ruby => node['gitlab']['install_ruby']
+    )
+  end
 
-  # # Set PATH for remainder of recipe.
-  # ENV['PATH'] = "/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/usr/local/ruby/#{node['gitlab']['install_ruby']}/bin"
-# end
+  # Set PATH for remainder of recipe.
+  ENV['PATH'] = "/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/usr/local/ruby/#{node['gitlab']['install_ruby']}/bin"
+end
 
 # Install required packages for Gitlab
 node['gitlab']['packages'].each do |pkg|
@@ -95,10 +95,10 @@ directory node['gitlab']['home'] do
   mode 0755
 end
 
-# Add the gitlab user to the "git" group
-group node['gitlab']['git_group'] do
-  members node['gitlab']['user']
-end
+# # Add the gitlab user to the "git" group
+# group node['gitlab']['git_group'] do
+#   members node['gitlab']['user']
+# end
 
 # Create a $HOME/.ssh folder
 directory "#{node['gitlab']['home']}/.ssh" do
@@ -251,6 +251,16 @@ execute "gitlab-bundle-install" do
   not_if { File.exists?("#{node['gitlab']['app_home']}/vendor/bundle") }
 end
 
+# bash "set permissions" do
+#   code <<-EOF
+#   setfacl -R -d -m u:#{node['gitlab']['git_user']}:rwX #{node['gitlab']['git_home']}/repositories
+#   setfacl -R -d -m u:#{node['gitlab']['user']}:rwX #{node['gitlab']['git_home']}/repositories
+#   setfacl -R -m u:#{node['gitlab']['git_user']}:rwX #{node['gitlab']['git_home']}/repositories
+#   setfacl -R -m u:#{node['gitlab']['user']}:rwX #{node['gitlab']['git_home']}/repositories
+#   EOF
+#   not_if { File.exists?("#{node['gitlab']['app_home']}/.gitlab-setup") }
+# end
+
 # Setup sqlite database for Gitlab
 execute "gitlab-bundle-rake" do
   command "echo 'yes'|bundle exec rake gitlab:setup RAILS_ENV=production && touch .gitlab-setup"
@@ -258,6 +268,16 @@ execute "gitlab-bundle-rake" do
   user node['gitlab']['user']
   group node['gitlab']['group']
   not_if { File.exists?("#{node['gitlab']['app_home']}/.gitlab-setup") }
+end
+
+template "/etc/init.d/gitlab" do
+  source "gitlab.init.erb"
+  mode "0755"
+end
+
+service "gitlab" do
+  action [:enable, :start]
+  supports status: true, restart: true
 end
 
 case node['gitlab']['http_proxy']['variant']

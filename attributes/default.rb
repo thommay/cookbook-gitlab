@@ -18,9 +18,9 @@
 # limitations under the License.
 
 # Set attributes for the git user
-default['gitlab']['user'] = "gitlab"
-default['gitlab']['group'] = "gitlab"
-default['gitlab']['home'] = "/var/gitlab"
+default['gitlab']['user'] = "git"
+default['gitlab']['group'] = "git"
+default['gitlab']['home'] = "/var/git"
 default['gitlab']['app_home'] = "#{node['gitlab']['home']}/gitlab"
 
 # Set github URL for gitlab
@@ -44,6 +44,7 @@ when "ubuntu","debian"
     curl wget checkinstall libxslt-dev libsqlite3-dev
     libcurl4-openssl-dev libssl-dev libmysql++-dev
     libicu-dev libc6-dev libyaml-dev python python-dev
+    patch
   }
 when "redhat","centos","amazon","scientific"
   case node['platform_version'].to_i
@@ -51,13 +52,13 @@ when "redhat","centos","amazon","scientific"
     default['gitlab']['packages'] = %w{
       curl wget libxslt-devel sqlite-devel openssl-devel
       mysql++-devel libicu-devel glibc-devel libyaml-devel
-      python26 python26-devel
+      python26 python26-devel patch
     }
   when 6
     default['gitlab']['packages'] = %w{
       curl wget libxslt-devel sqlite-devel openssl-devel
       mysql++-devel libicu-devel glibc-devel
-      libyaml-devel python python-devel
+      libyaml-devel python python-devel patch
     }
   end
 else
@@ -66,7 +67,7 @@ else
     curl wget checkinstall libxslt-dev libsqlite3-dev
     libcurl4-openssl-dev libssl-dev libmysql++-dev
     libicu-dev libc6-dev libyaml-dev python
-    python-dev
+    python-dev patch
   }
 end
 
@@ -75,13 +76,12 @@ default['gitlab']['trust_local_sshkeys'] = "yes"
 # Problems deploying this on RedHat provided rubies.
 case node['platform']
 when "redhat","centos","scientific","amazon"
-  default['gitlab']['install_ruby'] = "1.9.2-p290"
+  default['gitlab']['install_ruby'] = "1.9.3-p385"
 else
   default['gitlab']['install_ruby'] = "package"
 end
 
-default['gitlab']['unicorn_tcp'] = false
-default['gitlab']['unicorn_tcp_port'] = 8080
+default['gitlab']['puma_tcp_port'] = 9292
 
 default['gitlab']['https'] = false
 default['gitlab']['generate_ssl_certs'] = false
