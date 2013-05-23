@@ -82,7 +82,6 @@ end
 
 # Add the gitlab user
 user node['gitlab']['user'] do
-  comment "Gitlab User"
   home node['gitlab']['home']
   shell "/bin/bash"
   supports :manage_home => true
