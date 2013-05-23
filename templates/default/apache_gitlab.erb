@@ -1,4 +1,4 @@
-<% if @redirect_https -%>
+<% if @https -%>
 <VirtualHost *:80>
   ServerName        <%= @host_name %>
 <% @host_aliases.each do |a| -%>

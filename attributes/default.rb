@@ -85,8 +85,8 @@ default['gitlab']['puma_tcp_port'] = 9292
 
 default['gitlab']['https'] = false
 default['gitlab']['generate_ssl_certs'] = false
-default['gitlab']['ssl_certificate'] = "/etc/nginx/#{node['fqdn']}.crt"
-default['gitlab']['ssl_certificate_key'] = "/etc/nginx/#{node['fqdn']}.key"
+# default['gitlab']['ssl_certificate'] = "/etc/nginx/#{node['fqdn']}.crt"
+# default['gitlab']['ssl_certificate_key'] = "/etc/nginx/#{node['fqdn']}.key"
 default['gitlab']['ssl_req'] = "/C=US/ST=Several/L=Locality/O=Example/OU=Operations/CN=#{node['fqdn']}/emailAddress=root@localhost"
 default['gitlab']['http_proxy']['variant'] = 'nginx'
 default['gitlab']['http_proxy']['host_name'] = node['fqdn']
