@@ -78,4 +78,5 @@ execute "shell-install" do
   user node['gitlab']['git_user']
   cwd node['gitlab']['git_home']
   command "#{node['gitlab']['shell_home']}/bin/install"
+  creates "#{node['gitlab']['git_home']}/.ssh/authorized_keys"
 end
