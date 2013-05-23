@@ -11,7 +11,8 @@ template "#{node['apache']['dir']}/sites-available/gitlab" do
   group       'root'
   mode        '0644'
   variables(
-    :host_name     => node['gitlab']['http_proxy']['host_name'],
+    :https            => node['gitlab']['https'],
+    :host_name        => node['gitlab']['http_proxy']['host_name'],
     :host_aliases     => node['gitlab']['http_proxy']['host_aliases'],
     :ca_file          => node['gitlab']['ssl_ca_file'],
     :ca_chain_file    => node['gitlab']['ssl_ca_chain_file'],
