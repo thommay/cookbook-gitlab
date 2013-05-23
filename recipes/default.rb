@@ -91,7 +91,7 @@ end
 directory node['gitlab']['home'] do
   owner node['gitlab']['user']
   group node['gitlab']['group']
-  mode 0755
+  mode "0750"
 end
 
 # # Add the gitlab user to the "git" group
@@ -103,7 +103,7 @@ end
 directory "#{node['gitlab']['home']}/.ssh" do
   owner node['gitlab']['user']
   group node['gitlab']['group']
-  mode 0700
+  mode "0700"
 end
 
 # Generate and deploy ssh public/private keys
@@ -128,7 +128,7 @@ template "#{node['gitlab']['home']}/.ssh/id_rsa" do
   variables(
     :private_key => gitlab_sshkey.private_key
   )
-  mode 0600
+  mode "0600"
   not_if { File.exists?("#{node['gitlab']['home']}/.ssh/id_rsa") }
 end
 
@@ -136,7 +136,7 @@ end
 template "#{node['gitlab']['home']}/.ssh/id_rsa.pub" do
   owner node['gitlab']['user']
   group node['gitlab']['group']
-  mode 0644
+  mode "0644"
   variables(
     :public_key => node['gitlab']['public_key']
   )
@@ -148,7 +148,7 @@ template "#{node['gitlab']['git_home']}/gitlab.pub" do
   source "id_rsa.pub.erb"
   owner node['gitlab']['git_user']
   group node['gitlab']['git_group']
-  mode 0644
+  mode "0644"
   variables(
     :public_key => node['gitlab']['public_key']
   )
@@ -160,7 +160,7 @@ template "#{node['gitlab']['home']}/.ssh/config" do
   source "ssh_config.erb"
   owner node['gitlab']['user']
   group node['gitlab']['group']
-  mode 0644
+  mode "0644"
   variables(
     :fqdn => node['fqdn'],
     :trust_local_sshkeys => node['gitlab']['trust_local_sshkeys']
@@ -191,7 +191,7 @@ end
   template "#{node['gitlab']['app_home']}/config/#{cfg}" do
     owner node['gitlab']['user']
     group node['gitlab']['group']
-    mode 0644
+    mode "0644"
     variables(
       :fqdn => node['fqdn'],
       :https_boolean => node['gitlab']['https'],
@@ -217,7 +217,7 @@ end
 directory node['gitlab']['backup_path'] do
   owner node['gitlab']['user']
   group node['gitlab']['group']
-  mode 00755
+  mode "00755"
   action :create
 end
 
