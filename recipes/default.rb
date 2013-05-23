@@ -35,25 +35,25 @@ link "/usr/bin/redis-cli" do
   to "/usr/local/bin/redis-cli"
 end
 
-# There are problems deploying on Redhat provided rubies.
-# We'll use Fletcher Nichol's slick ruby_build cookbook to compile a Ruby.
-if node['gitlab']['install_ruby'] !~ /package/
-  ruby_build_ruby node['gitlab']['install_ruby']
+# # There are problems deploying on Redhat provided rubies.
+# # We'll use Fletcher Nichol's slick ruby_build cookbook to compile a Ruby.
+# if node['gitlab']['install_ruby'] !~ /package/
+#   ruby_build_ruby node['gitlab']['install_ruby']
 
-  # Drop off a profile script.
-  template "/etc/profile.d/gitlab.sh" do
-    owner "root"
-    group "root"
-    mode 0755
-    variables(
-      :fqdn => node['fqdn'],
-      :install_ruby => node['gitlab']['install_ruby']
-    )
-  end
+#   # Drop off a profile script.
+#   template "/etc/profile.d/gitlab.sh" do
+#     owner "root"
+#     group "root"
+#     mode 0755
+#     variables(
+#       :fqdn => node['fqdn'],
+#       :install_ruby => node['gitlab']['install_ruby']
+#     )
+#   end
 
-  # Set PATH for remainder of recipe.
-  ENV['PATH'] = "/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/usr/local/ruby/#{node['gitlab']['install_ruby']}/bin"
-end
+  # # Set PATH for remainder of recipe.
+  # ENV['PATH'] = "/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/usr/local/ruby/#{node['gitlab']['install_ruby']}/bin"
+# end
 
 # Install required packages for Gitlab
 node['gitlab']['packages'].each do |pkg|
@@ -189,19 +189,19 @@ end
 
 # Render gitlab config files
 %w{ gitlab.yml puma.rb }.each do |cfg|
-template "#{node['gitlab']['app_home']}/config/#{cfg}" do
-  owner node['gitlab']['user']
-  group node['gitlab']['group']
-  mode 0644
-  variables(
-    :fqdn => node['fqdn'],
-    :https_boolean => node['gitlab']['https'],
-    :git_user => node['gitlab']['git_user'],
-    :git_home => node['gitlab']['git_home'],
-    :backup_path => node['gitlab']['backup_path'],
-    :backup_keep_time => node['gitlab']['backup_keep_time']
-  )
-end
+  template "#{node['gitlab']['app_home']}/config/#{cfg}" do
+    owner node['gitlab']['user']
+    group node['gitlab']['group']
+    mode 0644
+    variables(
+      :fqdn => node['fqdn'],
+      :https_boolean => node['gitlab']['https'],
+      :git_user => node['gitlab']['git_user'],
+      :git_home => node['gitlab']['git_home'],
+      :backup_path => node['gitlab']['backup_path'],
+      :backup_keep_time => node['gitlab']['backup_keep_time']
+    )
+  end
 end
 
 # # Setup the database
@@ -258,4 +258,11 @@ execute "gitlab-bundle-rake" do
   user node['gitlab']['user']
   group node['gitlab']['group']
   not_if { File.exists?("#{node['gitlab']['app_home']}/.gitlab-setup") }
+end
+
+case node['gitlab']['http_proxy']['variant']
+when "nginx"
+  include_recipe "gitlab::proxy_nginx"
+when "apache2"
+  include_recipe "gitlab::proxy_apache2"
 end
