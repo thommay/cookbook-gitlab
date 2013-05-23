@@ -68,6 +68,9 @@ template "#{node['gitlab']['shell_home']}/config.yml" do
   source "config-shell.yml.erb"
   owner node['gitlab']['git_user']
   group node['gitlab']['git_group']
+  variables(
+    :https            => node['gitlab']['https'] ? "https" : "http",
+  )
 end
 
 # gitlab-shell application install script
