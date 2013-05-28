@@ -267,6 +267,7 @@ execute "gitlab-bundle-rake" do
   user node['gitlab']['user']
   group node['gitlab']['group']
   not_if "test -f #{node['gitlab']['home']}/.gitlab-setup"
+  not_if { !node['gitlab']['run_setup'] }
 end
 
 template "/etc/init.d/gitlab" do
