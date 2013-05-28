@@ -247,7 +247,7 @@ execute "gitlab-bundle-install" do
   user node['gitlab']['user']
   group node['gitlab']['group']
   environment({ 'LANG' => "en_US.UTF-8", 'LC_ALL' => "en_US.UTF-8" })
-  not_if "test -f #{node['gitlab']['app_home']}/vendor/bundle"
+  not_if "test -d #{node['gitlab']['app_home']}/vendor/bundle"
 end
 
 # bash "set permissions" do
