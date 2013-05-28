@@ -247,7 +247,7 @@ execute "gitlab-bundle-install" do
   user node['gitlab']['user']
   group node['gitlab']['group']
   environment({ 'LANG' => "en_US.UTF-8", 'LC_ALL' => "en_US.UTF-8" })
-  not_if { File.exists?("#{node['gitlab']['app_home']}/vendor/bundle") }
+  not_if "test -f #{node['gitlab']['app_home']}/vendor/bundle"
 end
 
 # bash "set permissions" do
@@ -262,11 +262,11 @@ end
 
 # Setup sqlite database for Gitlab
 execute "gitlab-bundle-rake" do
-  command "echo 'yes'|bundle exec rake gitlab:setup RAILS_ENV=production && touch .gitlab-setup"
+  command "echo 'yes'|bundle exec rake gitlab:setup RAILS_ENV=production && touch #{node['gitlab']['home']}/.gitlab-setup"
   cwd node['gitlab']['app_home']
   user node['gitlab']['user']
   group node['gitlab']['group']
-  not_if { File.exists?("#{node['gitlab']['app_home']}/.gitlab-setup") }
+  not_if "test -f #{node['gitlab']['home']}/.gitlab-setup"
 end
 
 template "/etc/init.d/gitlab" do
