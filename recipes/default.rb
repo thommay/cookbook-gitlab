@@ -27,7 +27,7 @@ end
 
 case node['platform_family']
 when "rhel"
-  include_recipe "yumrepo::epel"
+  include_recipe "yum::epel"
 end
 
 # symlink redis-cli into /usr/bin (needed for gitlab hooks to work)
