@@ -187,7 +187,7 @@ end
 end
 
 # Render gitlab config files
-%w{ gitlab.yml puma.rb }.each do |cfg|
+%w{ gitlab.yml unicorn.rb }.each do |cfg|
   template "#{node['gitlab']['app_home']}/config/#{cfg}" do
     owner node['gitlab']['user']
     group node['gitlab']['group']
@@ -197,6 +197,7 @@ end
       :https_boolean => node['gitlab']['https'],
       :git_user => node['gitlab']['git_user'],
       :git_home => node['gitlab']['git_home'],
+      :gitlab_app_home => node['gitlab']['app_home'],
       :backup_path => node['gitlab']['backup_path'],
       :backup_keep_time => node['gitlab']['backup_keep_time']
     )
