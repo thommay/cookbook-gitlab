@@ -36,13 +36,13 @@
   # Local reverse proxy authorization override
   # Most unix distribution deny proxy by default
   # (ie /etc/apache2/mods-enabled/proxy.conf in Ubuntu)
-  <Proxy http://localhost:<%= node['gitlab']['puma_tcp_port'] %>/*>
+  <Proxy http://localhost:8080/*>
     Order deny,allow
     Allow from all
   </Proxy>
 
   ProxyPreserveHost on
-  ProxyPass         /  http://localhost:<%= node['gitlab']['puma_tcp_port'] %>/
-  ProxyPassReverse  /  http://localhost:<%= node['gitlab']['puma_tcp_port'] %>/
+  ProxyPass         /  http://localhost:8080/
+  ProxyPassReverse  /  http://localhost:8080/
 
 </VirtualHost>
